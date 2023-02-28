@@ -3,9 +3,9 @@ import messageModel from "./model.js";
 import createHttpError from "http-errors";
 import q2m from "query-to-mongo";
 
-const messagesRouter = express.Router();
+const generalChatRouter = express.Router();
 // POST
-messagesRouter.post("/", async (req, res, next) => {
+generalChatRouter.post("/", async (req, res, next) => {
   try {
     const data = {
       ...req.body,
@@ -18,13 +18,12 @@ messagesRouter.post("/", async (req, res, next) => {
   }
 });
 // GET
-messagesRouter.get("/", async (req, res, next) => {
+generalChatRouter.get("/", async (req, res, next) => {
   try {
     const mongoQuery = q2m(req.query);
     const total = await messageModel.countDocuments(mongoQuery.criteria);
     const messages = await messageModel
       .find(mongoQuery.criteria, mongoQuery.options.fields)
-      .sort({ createdAt: -1 })
       .skip(mongoQuery.options.skip)
       .limit(mongoQuery.options.limit);
     res.status(200).send({
@@ -38,4 +37,4 @@ messagesRouter.get("/", async (req, res, next) => {
   }
 });
 
-export default messagesRouter;
+export default generalChatRouter;

@@ -13,7 +13,7 @@ import { createServer } from "http"; // CORE MODULE
 import mongoose from "mongoose";
 import groupsRouter from "./api/groups/index.js";
 import authenticationRouter from "./api/authentication/index.js";
-import notificationsRouter from "./api/users/notifications/index.js";
+import generalChatRouter from "./socket/GeneralChat/index.js";
 import { newConnectionHandler } from "./socket/index.js";
 
 const server = express();
@@ -28,7 +28,7 @@ server.use(cors());
 server.use("/groups", groupsRouter);
 server.use("/users", usersRouter);
 server.use("/auth", authenticationRouter);
-server.use("/notifications", notificationsRouter);
+server.use("/general-chat", generalChatRouter);
 
 server.use(badRequestHandler);
 server.use(unauthorizedHandler);

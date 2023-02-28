@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import groupModel from "../groups/model.js";
 const { Schema, model } = mongoose;
 
 const userSchema = new Schema(
@@ -8,6 +9,7 @@ const userSchema = new Schema(
     surname: { type: String, required: true },
     username: { type: String, required: true },
     password: { type: String, required: true },
+    email: { type: String, required: true },
     pfp: {
       type: String,
       required: false,
@@ -29,13 +31,8 @@ const userSchema = new Schema(
       },
     ], //who am i following
     followers: [{ type: Schema.Types.ObjectId, ref: "Users", required: false }], //who follows me
-    additionalInfo: {
-      memberOf: [
-        { type: Schema.Types.ObjectId, ref: "Groups", required: false },
-      ],
-      leaderOf: [
-        { type: Schema.Types.ObjectId, ref: "Groups", required: false },
-      ],
+    Info: {
+      groups: [{ type: Schema.Types.ObjectId, ref: "Groups", required: false }],
     },
   },
 
@@ -84,8 +81,8 @@ userSchema.methods.toJSON = function () {
   return user;
 };
 
-userSchema.statics.findByCredentials = async function (username, password) {
-  const user = await usersModel.findOne({ username });
+userSchema.statics.findByCredentials = async function (email, password) {
+  const user = await usersModel.findOne({ email });
   console.log(user);
   try {
     if (await bcrypt.compare(password, user.password)) return user;
@@ -94,6 +91,13 @@ userSchema.statics.findByCredentials = async function (username, password) {
   }
 
   return null;
+};
+userSchema.statics.findAdditionalInfo = async function (user_id) {
+  const groups = await groupModel.find({ leader: user_id });
+  console.log(groups);
+  if (groups) {
+    return groups;
+  }
 };
 
 // export default model("Users", userSchema);

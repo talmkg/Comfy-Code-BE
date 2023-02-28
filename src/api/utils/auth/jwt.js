@@ -1,8 +1,5 @@
 import jwt from "jsonwebtoken";
 import usersModel from "../../users/model.js";
-// we want to generate jwt tokens when we are authenticating one of our users
-
-//1. func to generate jwt
 
 export function generateJwt(payload) {
   return new Promise(function (resolve, reject) {
@@ -36,11 +33,10 @@ export async function jwtMiddleware(req, res, next) {
       next(error);
     } else {
       const token = req.headers.authorization.replace("Bearer ", "");
-      console.log("TOKEN LINE 36", token);
+
       const decoded = await verifyJwt(token);
-      console.log("DECODED", decoded);
+
       const user = await usersModel.findById(decoded.id);
-      console.log("USER WE ARE APPENDING:", user);
 
       req.user = user;
 
@@ -51,5 +47,3 @@ export async function jwtMiddleware(req, res, next) {
     next(error);
   }
 }
-
-//2. Verify JWT tokens when we are checking incoming requests.

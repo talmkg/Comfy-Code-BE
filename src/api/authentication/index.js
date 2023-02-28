@@ -6,14 +6,14 @@ authenticationRouter.post("/login", async (req, res, next) => {
   try {
     // findByCredentials() = a function in authors/schema.js which finds a user by email and compares the hashed value of password from request and the stored hashed value of the password.
     console.log(req.body);
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!username || !password) {
+    if (!email || !password) {
       const error = new Error("Missing credentials.");
       error.status = 401;
       throw error;
     }
-    const user = await usersModel.findByCredentials(username, password);
+    const user = await usersModel.findByCredentials(email, password);
 
     if (!user) {
       res.status(401);
@@ -26,7 +26,6 @@ authenticationRouter.post("/login", async (req, res, next) => {
   }
 });
 
-// create  user
 authenticationRouter.post("/register", async (req, res, next) => {
   try {
     if (!req.body.password) {

@@ -5,7 +5,6 @@ import Groups from "../groups/model.js";
 import q2m from "query-to-mongo";
 
 import { jwtMiddleware } from "../utils/auth/jwt.js";
-import notificationsModel from "./notifications/model.js";
 const usersRouter = express.Router();
 
 // GET
@@ -17,7 +16,17 @@ usersRouter.get("/", async (req, res, next) => {
       .find(mongoQuery.criteria, mongoQuery.options.fields)
       .sort({ createdAt: -1 })
       .skip(mongoQuery.options.skip)
-      .limit(mongoQuery.options.limit);
+      .limit(mongoQuery.options.limit)
+      .populate({
+        path: "follows",
+        model: "Users",
+        select: "name surname username",
+      })
+      .populate({
+        path: "followers",
+        model: "Users",
+        select: "name surname username",
+      });
 
     res.status(200).send({
       links: mongoQuery.links(total),
@@ -91,7 +100,7 @@ usersRouter.get("/profile/groups", jwtMiddleware, async (req, res, next) => {
 //GET LOGINNED USER'S PROFILE DATA
 usersRouter.get("/me/profile", jwtMiddleware, async (req, res, next) => {
   try {
-    let me = await usersModel
+    let user = await usersModel
       .find({ _id: req.user._id.toString() })
       .populate({
         path: "follows",
@@ -103,8 +112,7 @@ usersRouter.get("/me/profile", jwtMiddleware, async (req, res, next) => {
         model: "Users",
         select: "name surname username pfp bio background",
       });
-
-    res.status(200).send(me);
+    res.status(200).send(user);
   } catch (error) {
     next(error);
   }
@@ -153,10 +161,10 @@ usersRouter.delete("/:userId", async (req, res, next) => {
   try {
     const deletedUser = await usersModel.findByIdAndDelete(req.params.userId);
     //WORKS
-    const deletedNotificationsTwo = await notificationsModel.deleteMany({
-      //WORKS
-      from: req.params.userId,
-    });
+    // const deletedNotificationsTwo = await notificationsModel.deleteMany({
+    //   //WORKS
+    //   from: req.params.userId,
+    // });
     const deletedGroups = await Groups.deleteMany({
       //WORKS
       leader: [req.params.userId],
@@ -165,7 +173,7 @@ usersRouter.delete("/:userId", async (req, res, next) => {
     //
     //
     //
-    if (deletedNotificationsTwo || deletedGroups || deletedUser) {
+    if (deletedUser) {
       res.status(204).send();
     } else {
       next(createHttpError(404, `user with id ${req.params.userId} not found`));
@@ -217,13 +225,6 @@ usersRouter.put("/follow/:userId", jwtMiddleware, async (req, res, next) => {
         );
 
         if (updatedFollows) {
-          const newNotification = new notificationsModel({
-            type: "follow",
-            text: `${req.user.name} followed you!`,
-            from: req.user._id,
-            parentUser: req.params.userId,
-          });
-          const { _id } = await newNotification.save();
           res.send(updatedFollows);
         } else {
           next(
@@ -242,7 +243,9 @@ usersRouter.put("/follow/:userId", jwtMiddleware, async (req, res, next) => {
 //UNFOLLOW SOMEONE --- DONE ✔️              deletes one of our follows and one of followers of the user we were following
 usersRouter.put("/unfollow/:userId", jwtMiddleware, async (req, res, next) => {
   try {
+    console.log("check 1");
     let userToUnfollow = await usersModel.findById(req.params.userId); //✔️
+    console.log("user to unfollow", userToUnfollow);
     let mainUser = req.user;
     if (mainUser.follows.includes(userToUnfollow._id)) {
       function everythingButUser(value) {
@@ -253,6 +256,7 @@ usersRouter.put("/unfollow/:userId", jwtMiddleware, async (req, res, next) => {
         follows: follows,
       };
       //---------------------------------
+      console.log("check 2");
       function everythingButMainUser(value) {
         return value.toString() !== mainUser._id.toString();
       }
@@ -265,27 +269,18 @@ usersRouter.put("/unfollow/:userId", jwtMiddleware, async (req, res, next) => {
         { new: true, runValidators: true }
       );
       //---------------------------------
+      console.log("check 3");
       const updatedFollowsOfMainUser = await usersModel.findByIdAndUpdate(
         req.user._id,
         data,
         { new: true, runValidators: true }
       );
-      if (updatedFollowsOfMainUser) {
-        const newNotification = new notificationsModel({
-          type: "unfollow",
-          text: `${req.user.name} unfollowed you`,
-          from: req.user._id,
-          parentUser: req.params.userId,
-        });
-        const { _id } = await newNotification.save();
-        res.send(updatedFollowsOfMainUser);
+      if (updatedFollowsOfMainUser && updatedFollowersOfAnotherUser) {
+        console.log("res sent");
+        res.status(200).send();
       } else {
-        next(
-          createHttpError(404, `group with id ${req.params.groupId} not found`)
-        );
+        res.status(400).send("error?");
       }
-    } else {
-      res.status(400).send("You are not member of this group.");
     }
   } catch (error) {
     next(error);

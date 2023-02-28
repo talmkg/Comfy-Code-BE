@@ -1,40 +1,56 @@
-import messageModel from "./messages/model.js";
-import q2m from "query-to-mongo";
+import messageModel from "./GeneralChat/model.js";
 
 let onlineUsers = [];
 
-// const messagesfrommongo = await messageModel.find().sort({ createdAt: -1 });
-
 export const newConnectionHandler = (newClient) => {
   console.log("NEW CONNECTION:", newClient.id);
-
   newClient.emit("welcome", { message: `Hello ${newClient.id}` });
-
   newClient.on("setUsername", (payload) => {
-    console.log(payload);
     onlineUsers.push({ username: payload.username, socketId: newClient.id });
     newClient.emit("loggedIn", onlineUsers);
     newClient.broadcast.emit("updateOnlineUsersList", onlineUsers);
-  });
-  newClient.on("requestAllMessages", async () => {
-    const messages = await messageModel.find().sort({ createdAt: -1 }).limit(6);
-    newClient.broadcast.emit("AllMessages", messages);
   });
 
   newClient.on("sendMessage", (message) => {
     console.log(message);
     const saveToMongo = async () => {
       const data = {
-        sender: message.sender,
+        username: message.username,
+        pfp: message.pfp,
+        user_id: message.user_id,
         text: message.text,
-        createdAt: message.createdAt,
       };
       const newmessage = new messageModel(data);
       const { _id } = await newmessage.save();
-      console.log("message is saved to mongo:", _id);
+      console.log(_id);
     };
+
     newClient.broadcast.emit("newMessage", message);
     saveToMongo();
+    // const checkIfDeleteIsNeeded = async () => {
+    //   const chatHistory = await messageModel.countDocuments(); //already gives us a number
+    //   if (chatHistory > 15) {
+    //     const lastmessage = await messageModel.findOne({
+    //       $query: {},
+    //       $orderby: { $natural: -1 },
+    //     });
+    //     await messageModel.findByIdAndDelete(lastmessage._id);
+    //   } else {
+    // saveToMongo();
+    //   }
+    // };
+    // checkIfDeleteIsNeeded();
+  });
+  newClient.on("requestChatHistory", () => {
+    console.log("Starting to process chat history...");
+    let chatHistory;
+    const findMessages = async () => {
+      chatHistory = await messageModel.find().limit(10).sort({ $natural: -1 });
+      const reversed = chatHistory.reverse();
+
+      newClient.emit("chatHistory", reversed);
+    };
+    findMessages();
   });
 
   newClient.on("disconnect", () => {
