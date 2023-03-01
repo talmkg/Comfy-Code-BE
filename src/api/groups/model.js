@@ -17,6 +17,7 @@ const groupsSchema = new Schema(
       ],
       validate: [arrayLimit, "Team exceeds the limit of 5"],
     },
+    hashtags: [{ type: Object, required: false }],
     // team: [{ type: Schema.Types.ObjectId, ref: "Users", required: true }],
     //not required
     imageUrl: { type: String, required: false },

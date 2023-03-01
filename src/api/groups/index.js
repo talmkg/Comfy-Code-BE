@@ -63,6 +63,12 @@ groupsRouter.get("/", async (req, res, next) => {
         model: "Users",
         select: "name surname username pfp bio background",
       });
+    // .populate({
+    //   path: "hashtags",
+    //   model: "Hashtags",
+    //   select: "title",
+    // });
+
     res.status(200).send({
       links: mongoQuery.links(total),
       total,
@@ -147,35 +153,6 @@ groupsRouter.put("/join/:groupId", jwtMiddleware, async (req, res, next) => {
 });
 
 //INVITE TO A GROUP --- REWORK REQUIRED
-
-// groupsRouter.put(
-//   "/:groupId/invite/:userId",
-//   jwtMiddleware,
-//   async (req, res, next) => {
-//     try {
-//       let group = await groupModel.findById(req.params.groupId);
-//       // we have to check if req.user is in the group of this post
-
-//       if (group.team.toString().includes(req.user._id)) {
-//         const newNotification = new notificationsModel({
-//           type: "invite",
-//           text: `${req.user.name} invited you to a group!`,
-//           from: req.user._id,
-//           parentUser: req.params.userId,
-//           group: req.params.groupId,
-//         });
-//         const { _id } = await newNotification.save();
-//         if (newNotification) {
-//           res.status(200).send("Invited.");
-//         }
-//       } else {
-//         res.status(403).send("You are not a member of that group.");
-//       }
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// );
 
 //LEAVE GROUP --- DONE ✔️
 groupsRouter.put("/leave/:groupId", jwtMiddleware, async (req, res, next) => {

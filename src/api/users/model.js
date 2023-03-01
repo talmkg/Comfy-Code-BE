@@ -31,9 +31,6 @@ const userSchema = new Schema(
       },
     ], //who am i following
     followers: [{ type: Schema.Types.ObjectId, ref: "Users", required: false }], //who follows me
-    Info: {
-      groups: [{ type: Schema.Types.ObjectId, ref: "Groups", required: false }],
-    },
   },
 
   { timestamps: true }
