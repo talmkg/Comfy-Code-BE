@@ -245,7 +245,6 @@ usersRouter.put("/unfollow/:userId", jwtMiddleware, async (req, res, next) => {
   try {
     console.log("check 1");
     let userToUnfollow = await usersModel.findById(req.params.userId); //✔️
-    console.log("user to unfollow", userToUnfollow);
     let mainUser = req.user;
     if (mainUser.follows.includes(userToUnfollow._id)) {
       function everythingButUser(value) {

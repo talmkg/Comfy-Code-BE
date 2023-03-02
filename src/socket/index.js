@@ -1,4 +1,5 @@
-import messageModel from "./GeneralChat/model.js";
+import messageModel from "../api/GeneralChat/model.js";
+import notificationsModel from "../api/notifications/model.js";
 
 let onlineUsers = [];
 
@@ -6,7 +7,11 @@ export const newConnectionHandler = (newClient) => {
   console.log("NEW CONNECTION:", newClient.id);
   newClient.emit("welcome", { message: `Hello ${newClient.id}` });
   newClient.on("setUsername", (payload) => {
-    onlineUsers.push({ username: payload.username, socketId: newClient.id });
+    onlineUsers.push({
+      _id: payload._id,
+      username: payload.username,
+      socketId: newClient.id,
+    });
     newClient.emit("loggedIn", onlineUsers);
     newClient.broadcast.emit("updateOnlineUsersList", onlineUsers);
   });
@@ -27,20 +32,55 @@ export const newConnectionHandler = (newClient) => {
 
     newClient.broadcast.emit("newMessage", message);
     saveToMongo();
-    // const checkIfDeleteIsNeeded = async () => {
-    //   const chatHistory = await messageModel.countDocuments(); //already gives us a number
-    //   if (chatHistory > 15) {
-    //     const lastmessage = await messageModel.findOne({
-    //       $query: {},
-    //       $orderby: { $natural: -1 },
-    //     });
-    //     await messageModel.findByIdAndDelete(lastmessage._id);
-    //   } else {
-    // saveToMongo();
-    //   }
-    // };
-    // checkIfDeleteIsNeeded();
   });
+  // newClient.on("sendNotification", (notification) => {
+  //   console.log(notification);
+  //   const saveToMongo = async () => {
+  //     const newnotification = new notificationsModel(notification);
+  //     const { _id } = await newnotification.save();
+  //     console.log(_id);
+  //   };
+  //   newClient.broadcast.emit("newNotification", notification);
+  //   saveToMongo();
+  // });
+
+  //
+  //
+  //
+
+  newClient.on("notification", (props) => {
+    const { from, text, to, from_mongo, to_mongo } = props;
+
+    console.log(
+      "notification -------------------------------------------------",
+      props
+    );
+    newClient.to(to).emit("notification", {
+      text,
+      to: to,
+      from: from_mongo,
+      createdAt: new Date().toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+    });
+    const saveToMongo = async () => {
+      const data = {
+        from: from_mongo._id,
+        to: to_mongo,
+        text: text,
+      };
+      const newNotification = new notificationsModel(data);
+      const { _id } = await newNotification.save();
+      console.log(_id);
+    };
+    saveToMongo();
+  });
+
+  //
+  //
+  //
   newClient.on("requestChatHistory", () => {
     console.log("Starting to process chat history...");
     let chatHistory;

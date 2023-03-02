@@ -2,7 +2,7 @@ import express from "express";
 import groupModel from "./model.js";
 import createHttpError from "http-errors";
 import q2m from "query-to-mongo";
-import { parseFile } from "../utils/upload.js";
+import { cloudinaryUpload, parseFile } from "../utils/upload.js";
 import { jwtMiddleware } from "../utils/auth/jwt.js";
 import Users from "../users/model.js";
 import usersModel from "../users/model.js";
@@ -19,30 +19,35 @@ groupsRouter.post("/", jwtMiddleware, async (req, res, next) => {
     const newgroup = new groupModel(data);
     const { _id } = await newgroup.save();
     //-------------------------
-
-    //we need to find a user first to take existing leaderOf and memberOf
-    // const user = req.user;
-    // const dataofUser = {
-    //   additionalInfo: {
-    //     leaderOf: user.additionalInfo.leaderOf.concat({ _id }),
-    //     memberOf: user.additionalInfo.memberOf.concat({ _id }),
-    //   },
-    // };
-    // const updatingInfoOfUser = await usersModel.findByIdAndUpdate(
-    //   user._id,
-    //   dataofUser,
-    //   {
-    //     new: true,
-    //     runValidators: true,
-    //   }
-    // );
-    // console.log("User changed, Post posted");
     //-------------------------
     res.status(201).send({ _id });
   } catch (error) {
     next(error);
   }
 });
+//cover
+groupsRouter.put(
+  "/:groupid/cover",
+  cloudinaryUpload,
+  async (req, res, next) => {
+    try {
+      console.log("uploading image...");
+      const updatedgroup = await groupModel.findByIdAndUpdate(
+        req.params.groupid,
+        {
+          ...req.body,
+          imageUrl: req.file.path,
+        }
+      );
+      console.log(req.file.path);
+      if (updatedgroup) {
+        res.status(201).send(updatedgroup);
+      }
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 // GET
 groupsRouter.get("/", async (req, res, next) => {
   try {
@@ -205,28 +210,28 @@ groupsRouter.put("/leave/:groupId", jwtMiddleware, async (req, res, next) => {
   }
 });
 //COVER --- Later
-groupsRouter.put(
-  "/:groupId/cover",
-  parseFile.single("cover"),
-  async (req, res, next) => {
-    try {
-      // console.log(req.file.path);
-      const updatedgroup = await groupModel.findByIdAndUpdate(
-        req.params.groupId,
-        {
-          ...req.body,
-          imageUrl: req.file.path,
-        }
-      );
-      if (updatedgroup) {
-        res.send(updatedgroup);
-      }
-    } catch (error) {
-      console.log(error);
-      res.send(500).send({ message: error.message });
-    }
-  }
-);
+// groupsRouter.put(
+//   "/:groupId/cover",
+//   parseFile.single("cover"),
+//   async (req, res, next) => {
+//     try {
+//       // console.log(req.file.path);
+//       const updatedgroup = await groupModel.findByIdAndUpdate(
+//         req.params.groupId,
+//         {
+//           ...req.body,
+//           imageUrl: req.file.path,
+//         }
+//       );
+//       if (updatedgroup) {
+//         res.send(updatedgroup);
+//       }
+//     } catch (error) {
+//       console.log(error);
+//       res.send(500).send({ message: error.message });
+//     }
+//   }
+// );
 // DELETE +VALIDATION OF A TOKEN +VALIDATION IF U ARE A LEADER ✔️
 groupsRouter.delete("/:groupId", jwtMiddleware, async (req, res, next) => {
   try {

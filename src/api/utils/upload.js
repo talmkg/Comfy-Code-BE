@@ -23,11 +23,11 @@ export const cloudinaryUpload = multer({
   storage: new CloudinaryStorage({
     cloudinary,
     params: {
-      folder: "ComfyCode/comment-imgs",
+      folder: "ComfyCode/groups-covers",
       allowedFormats: ["jpeg", "png", "jpg"],
     },
   }),
-}).single("post");
+}).single("cover");
 
 const __filename = fileURLToPath(import.meta.url);
 

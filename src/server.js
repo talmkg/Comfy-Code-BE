@@ -13,7 +13,8 @@ import { createServer } from "http"; // CORE MODULE
 import mongoose from "mongoose";
 import groupsRouter from "./api/groups/index.js";
 import authenticationRouter from "./api/authentication/index.js";
-import generalChatRouter from "./socket/GeneralChat/index.js";
+import generalChatRouter from "./api/GeneralChat/index.js";
+import notificationsRouter from "./api/notifications/index.js";
 
 import { newConnectionHandler } from "./socket/index.js";
 
@@ -30,7 +31,7 @@ server.use("/groups", groupsRouter);
 server.use("/users", usersRouter);
 server.use("/auth", authenticationRouter);
 server.use("/general-chat", generalChatRouter);
-
+server.use("/notifications", notificationsRouter);
 server.use(badRequestHandler);
 server.use(unauthorizedHandler);
 server.use(notFoundHandler);
