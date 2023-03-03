@@ -12,4 +12,4 @@ const messagesSchema = new Schema(
   { timestamps: true }
 );
 
-export default model("Messages", messagesSchema);
+export default model("GeneralChatMessages", messagesSchema);

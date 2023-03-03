@@ -22,7 +22,7 @@ generalChatRouter.get("/", async (req, res, next) => {
   try {
     const mongoQuery = q2m(req.query);
     const total = await messageModel.countDocuments(mongoQuery.criteria);
-    const messages = await messageModel
+    const generalChatMessages = await messageModel
       .find(mongoQuery.criteria, mongoQuery.options.fields)
       .skip(mongoQuery.options.skip)
       .limit(mongoQuery.options.limit);
@@ -30,7 +30,7 @@ generalChatRouter.get("/", async (req, res, next) => {
       links: mongoQuery.links(total),
       total,
       totalPages: Math.ceil(total / mongoQuery.options.limit),
-      messages,
+      generalChatMessages,
     });
   } catch (error) {
     next(error);
