@@ -5,6 +5,11 @@ import Groups from "../groups/model.js";
 import q2m from "query-to-mongo";
 
 import { jwtMiddleware } from "../utils/auth/jwt.js";
+import {
+  cloudinaryUpload,
+  cloudinaryUploadBackground,
+  cloudinaryUploadPFP,
+} from "../utils/upload.js";
 const usersRouter = express.Router();
 
 // GET
@@ -285,4 +290,40 @@ usersRouter.put("/unfollow/:userId", jwtMiddleware, async (req, res, next) => {
     next(error);
   }
 });
+//update pfp
+usersRouter.put("/:userId/pfp", cloudinaryUploadPFP, async (req, res, next) => {
+  try {
+    console.log("uploading image...");
+    const updatedUser = await usersModel.findByIdAndUpdate(req.params.userId, {
+      ...req.body,
+      pfp: req.file.path,
+    });
+
+    if (updatedUser) {
+      res.status(201).send(updatedUser);
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+usersRouter.put(
+  "/background",
+  jwtMiddleware,
+  cloudinaryUploadBackground,
+  async (req, res, next) => {
+    try {
+      console.log("uploading image...");
+      const updatedUser = await usersModel.findByIdAndUpdate(req.user._id, {
+        ...req.body,
+        pfp: req.file.path,
+      });
+      console.log(req.file.path);
+      if (updatedUser) {
+        res.status(201).send(updatedUser);
+      }
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 export default usersRouter;

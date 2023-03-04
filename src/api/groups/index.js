@@ -209,29 +209,7 @@ groupsRouter.put("/leave/:groupId", jwtMiddleware, async (req, res, next) => {
     next(error);
   }
 });
-//COVER --- Later
-// groupsRouter.put(
-//   "/:groupId/cover",
-//   parseFile.single("cover"),
-//   async (req, res, next) => {
-//     try {
-//       // console.log(req.file.path);
-//       const updatedgroup = await groupModel.findByIdAndUpdate(
-//         req.params.groupId,
-//         {
-//           ...req.body,
-//           imageUrl: req.file.path,
-//         }
-//       );
-//       if (updatedgroup) {
-//         res.send(updatedgroup);
-//       }
-//     } catch (error) {
-//       console.log(error);
-//       res.send(500).send({ message: error.message });
-//     }
-//   }
-// );
+
 // DELETE +VALIDATION OF A TOKEN +VALIDATION IF U ARE A LEADER ✔️
 groupsRouter.delete("/:groupId", jwtMiddleware, async (req, res, next) => {
   try {

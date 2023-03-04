@@ -28,7 +28,24 @@ export const cloudinaryUpload = multer({
     },
   }),
 }).single("cover");
-
+export const cloudinaryUploadPFP = multer({
+  storage: new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder: "ComfyCode/users-pfps",
+      allowedFormats: ["jpeg", "png", "jpg"],
+    },
+  }),
+}).single("pfp");
+export const cloudinaryUploadBackground = multer({
+  storage: new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder: "ComfyCode/users-backgrounds",
+      allowedFormats: ["jpeg", "png", "jpg"],
+    },
+  }),
+}).single("background");
 const __filename = fileURLToPath(import.meta.url);
 
 export const parseFile = multer({ storage });
