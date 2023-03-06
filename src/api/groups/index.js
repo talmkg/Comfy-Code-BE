@@ -61,13 +61,18 @@ groupsRouter.get("/", async (req, res, next) => {
       .populate({
         path: "leader",
         model: "Users",
-        select: "name surname username pfp bio background",
+        select: "name surname username pfp bio background badges",
       })
       .populate({
         path: "team",
         model: "Users",
-        select: "name surname username pfp bio background",
+        select: "name surname username pfp bio background badges",
+      })
+      .populate({
+        path: "team",
+        populate: { path: "badges", model: "Badges", select: "icon title" },
       });
+
     // .populate({
     //   path: "hashtags",
     //   model: "Hashtags",

@@ -46,6 +46,15 @@ export const cloudinaryUploadBackground = multer({
     },
   }),
 }).single("background");
+export const cloudinaryUploadPostImages = multer({
+  storage: new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder: "ComfyCode/post-images",
+      allowedFormats: ["jpeg", "png", "jpg"],
+    },
+  }),
+}).single("postImage");
 const __filename = fileURLToPath(import.meta.url);
 
 export const parseFile = multer({ storage });

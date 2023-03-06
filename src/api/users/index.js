@@ -116,6 +116,11 @@ usersRouter.get("/me/profile", jwtMiddleware, async (req, res, next) => {
         path: "followers",
         model: "Users",
         select: "name surname username pfp bio background",
+      })
+      .populate({
+        path: "badges",
+        model: "Badges",
+        select: "icon title",
       });
     res.status(200).send(user);
   } catch (error) {
@@ -192,20 +197,19 @@ usersRouter.delete("/:userId", async (req, res, next) => {
 usersRouter.put("/follow/:userId", jwtMiddleware, async (req, res, next) => {
   try {
     let userToFollow = await usersModel.findById(req.params.userId);
-    let mainUsersFollows = req.user.follows;
-
+    let fetchedMainUser = usersModel.find({ _id: req.user._id });
+    let mainUsersFollows = fetchedMainUser.follows;
     if (userToFollow._id.toString() === req.user._id.toString()) {
       res.status(400).send("You can't follow yourself.");
     } else {
       if (mainUsersFollows.includes(userToFollow._id)) {
         res.status(400).send("You are already following this user.");
-        console.log("DUPLICATE");
+        console.log("You are already following this user.");
       } else {
         mainUsersFollows = mainUsersFollows.concat(userToFollow._id);
         const data = {
           follows: mainUsersFollows,
         };
-        //-------------------------
         const dataofAnotherUser = {
           followers: userToFollow.followers.concat(req.user._id),
         };
@@ -250,7 +254,7 @@ usersRouter.put("/unfollow/:userId", jwtMiddleware, async (req, res, next) => {
   try {
     console.log("check 1");
     let userToUnfollow = await usersModel.findById(req.params.userId); //✔️
-    let mainUser = req.user;
+    let mainUser = await usersModel.findById(req.user._id);
     if (mainUser.follows.includes(userToUnfollow._id)) {
       function everythingButUser(value) {
         return value.toString() !== userToUnfollow._id.toString();

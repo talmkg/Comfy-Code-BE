@@ -12,6 +12,14 @@ const userSchema = new Schema(
     email: { type: String, required: true },
     location: { type: String, required: false },
     birthday: { type: String, required: false },
+    badges: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Badges",
+        required: false,
+        default: [],
+      },
+    ], //who follows me
     pfp: {
       type: String,
       required: false,

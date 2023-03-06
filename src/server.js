@@ -19,6 +19,7 @@ import notificationsRouter from "./api/notifications/index.js";
 import { newConnectionHandler } from "./socket/index.js";
 import badgesRouter from "./api/badges/index.js";
 import postsRouter from "./api/posts/index.js";
+import feedRouter from "./api/PersonalFeed/index.js";
 
 const server = express();
 const port = process.env.PORT || 3002;
@@ -50,6 +51,7 @@ server.use("/general-chat", generalChatRouter);
 server.use("/notifications", notificationsRouter);
 server.use("/badges", badgesRouter);
 server.use("/posts", postsRouter);
+server.use("/feed", feedRouter);
 
 server.use(badRequestHandler);
 server.use(unauthorizedHandler);

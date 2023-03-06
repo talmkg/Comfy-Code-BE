@@ -5,8 +5,10 @@ const { Schema, model } = mongoose;
 
 const postSchema = new Schema(
   {
+    type: { type: String, required: true, default: "Post" },
+    creator: { type: String, required: true },
     text: { type: String, required: true },
-    image: { type: String, required: false },
+    images: [{ type: String, required: false }],
   },
   { timestamps: true }
 );

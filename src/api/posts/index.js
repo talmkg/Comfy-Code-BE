@@ -3,14 +3,26 @@ import createHttpError from "http-errors";
 import postsModel from "./model.js";
 import usersModel from "../users/model.js";
 import { jwtMiddleware } from "../utils/auth/jwt.js";
-
+import {
+  cloudinaryUpload,
+  cloudinaryUploadPostImages,
+} from "../utils/upload.js";
+import postModel from "./model.js";
+import q2m from "query-to-mongo";
 const postsRouter = express.Router();
 
 postsRouter.get("/:userid", async (req, res, next) => {
   try {
-    const posts = await postsModel.find({
-      to: req.params.userid,
-    });
+    const posts = await postsModel
+      .find({
+        creator: req.params.userid,
+      })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "creator",
+        model: "Users",
+        select: "name surname username pfp bio background",
+      });
     if (posts) {
       res.send(posts);
     } else {
@@ -21,15 +33,38 @@ postsRouter.get("/:userid", async (req, res, next) => {
   }
 });
 //will work for now
-postsRouter.post("/:userid", async (req, res, next) => {
-  try {
-    const newPost = new postsModel(req.body);
-    const { _id } = await newPost.save();
-    res.status(201).send({ _id });
-  } catch (err) {
-    next(err);
+postsRouter.post(
+  "/",
+
+  jwtMiddleware,
+  cloudinaryUploadPostImages,
+  async (req, res, next) => {
+    try {
+      const userFromToken = req.user;
+      console.log(req.body);
+      if (req.body.postImage !== "undefined" || undefined) {
+        console.log("uploading image...");
+        const newPost = new postModel({
+          type: "Post",
+          text: req.body.text,
+          images: [req?.file?.path],
+          creator: userFromToken._id,
+        });
+        const { _id } = await newPost.save();
+        res.status(201).send({ _id });
+      } else {
+        const newPost = new postsModel({
+          text: req.body.text,
+          creator: userFromToken._id,
+        });
+        const { _id } = await newPost.save();
+        res.status(201).send({ _id });
+      }
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 postsRouter.delete("/:postid", async (req, res, next) => {
   try {

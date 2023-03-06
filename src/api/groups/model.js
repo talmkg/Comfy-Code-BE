@@ -4,6 +4,7 @@ const { Schema, model } = mongoose;
 
 const groupsSchema = new Schema(
   {
+    type: { type: String, required: true, default: "Group" },
     title: { type: String, required: true },
     description: { type: String, required: true },
     leader: [{ type: Schema.Types.ObjectId, ref: "Users", required: true }],
@@ -32,4 +33,5 @@ function arrayLimit(val) {
   return val.length <= 5;
 }
 
-export default model("Groups", groupsSchema);
+const groupModel = mongoose.model("Groups", groupsSchema);
+export default groupModel;
