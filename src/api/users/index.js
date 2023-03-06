@@ -193,78 +193,67 @@ usersRouter.delete("/:userId", async (req, res, next) => {
   }
 });
 // ------ FOLLOWERS ------
-//FOLLOW SOMEONE --- DONE ✔️                changes follows of main user and followers of the user we followed
+//FOLLOW SOMEONE --- DONE ✔️    ---REWORKED 3/6/2023 1. adds a follow in yours model, and a follower in requested model. Of course, before each request it creates a SET to delete all possible duplicates.
 usersRouter.put("/follow/:userId", jwtMiddleware, async (req, res, next) => {
   try {
     let userToFollow = await usersModel.findById(req.params.userId);
-    let fetchedMainUser = usersModel.find({ _id: req.user._id });
-    let mainUsersFollows = fetchedMainUser.follows;
-    if (userToFollow._id.toString() === req.user._id.toString()) {
-      res.status(400).send("You can't follow yourself.");
-    } else {
-      if (mainUsersFollows.includes(userToFollow._id)) {
-        res.status(400).send("You are already following this user.");
-        console.log("You are already following this user.");
-      } else {
-        mainUsersFollows = mainUsersFollows.concat(userToFollow._id);
-        const data = {
-          follows: mainUsersFollows,
-        };
-        const dataofAnotherUser = {
-          followers: userToFollow.followers.concat(req.user._id),
-        };
-        const updatedFollowersOfAnotherUser =
-          await usersModel.findByIdAndUpdate(
-            userToFollow._id,
-            dataofAnotherUser,
-            {
-              new: true,
-              runValidators: true,
-            }
-          );
-        console.log(
-          "Followers of another user changed:",
-          updatedFollowersOfAnotherUser
-        );
-        //-------------------------
-        const updatedFollows = await usersModel.findByIdAndUpdate(
-          req.user._id,
-          data,
-          { new: true, runValidators: true }
-        );
-
-        if (updatedFollows) {
-          res.send(updatedFollows);
-        } else {
-          next(
-            createHttpError(
-              404,
-              `group with id ${req.params.groupId} not found`
-            )
-          );
-        }
+    let user = await usersModel.findById(req.user._id);
+    const followsObjectId = [...user.follows, userToFollow._id];
+    const cleanDataFollows = followsObjectId.map((id) => {
+      return id.toString();
+    });
+    const follows = [...new Set(cleanDataFollows)];
+    console.log("uniqArray follows:", follows);
+    const updatedFollows = await usersModel.findByIdAndUpdate(
+      user._id,
+      { follows: follows },
+      {
+        new: true,
+        runValidators: true,
       }
+    );
+    console.log("half done");
+    //update them
+    const followersObjectId = [...userToFollow.followers, user._id];
+
+    const cleanDataFollowers = followersObjectId.map((id) => {
+      return id.toString();
+    });
+    const followers = [...new Set(cleanDataFollowers)];
+    console.log("uniqArray followers :", followers);
+    const updatedFollowers = await usersModel.findByIdAndUpdate(
+      user._id,
+      { followers: followers },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (updatedFollows && updatedFollowers) {
+      res.status(200).send("You followed them <3");
     }
   } catch (error) {
     next(error);
   }
 });
-//UNFOLLOW SOMEONE --- DONE ✔️              deletes one of our follows and one of followers of the user we were following
+//UNFOLLOW SOMEONE --- DONE ✔️  ---NOT ACTUALLY REWORKED BUT FOUND NO BUGS THERE (MIGHT COME BACK) 3/6/2023
 usersRouter.put("/unfollow/:userId", jwtMiddleware, async (req, res, next) => {
   try {
-    console.log("check 1");
     let userToUnfollow = await usersModel.findById(req.params.userId); //✔️
     let mainUser = await usersModel.findById(req.user._id);
     if (mainUser.follows.includes(userToUnfollow._id)) {
       function everythingButUser(value) {
         return value.toString() !== userToUnfollow._id.toString();
       }
-      const follows = mainUser.follows.filter(everythingButUser);
-      const data = {
-        follows: follows,
-      };
+      let follows = mainUser.follows.filter(everythingButUser);
+      console.log(follows);
+      // follows = [...new Set(follows)];
+      const updatedFollowsOfMainUser = await usersModel.findByIdAndUpdate(
+        req.user._id,
+        { follows: follows }
+      );
       //---------------------------------
-      console.log("check 2");
       function everythingButMainUser(value) {
         return value.toString() !== mainUser._id.toString();
       }
@@ -273,24 +262,20 @@ usersRouter.put("/unfollow/:userId", jwtMiddleware, async (req, res, next) => {
       };
       const updatedFollowersOfAnotherUser = await usersModel.findByIdAndUpdate(
         userToUnfollow._id,
-        dataofAnotherUser,
-        { new: true, runValidators: true }
+        dataofAnotherUser
       );
       //---------------------------------
-      console.log("check 3");
-      const updatedFollowsOfMainUser = await usersModel.findByIdAndUpdate(
-        req.user._id,
-        data,
-        { new: true, runValidators: true }
-      );
+
       if (updatedFollowsOfMainUser && updatedFollowersOfAnotherUser) {
-        console.log("res sent");
-        res.status(200).send();
+        res.status(200).send("You unfollowed them <3");
       } else {
         res.status(400).send("error?");
       }
+    } else {
+      res.status(400).send("You are not following that user.");
     }
   } catch (error) {
+    console.log("error");
     next(error);
   }
 });
