@@ -54,11 +54,14 @@ feedRouter.get("/:limit", jwtMiddleware, async (req, res, next) => {
           return { creator: follow_id.creator };
         }),
       })
+
       .populate({
         path: "creator",
         model: "Users",
-        select: "name surname username pfp bio background",
+        select: "name surname username pfp bio background badges",
+        populate: { path: "badges", model: "Badges", select: "icon title" },
       });
+
     if (dataOfFollows) {
       const allLatestGroups = await groupModel
         .find()

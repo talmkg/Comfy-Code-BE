@@ -16,22 +16,26 @@ const groupsSchema = new Schema(
           required: true,
         },
       ],
-      validate: [arrayLimit, "Team exceeds the limit of 5"],
     },
     hashtags: [{ type: Object, required: false }],
-    // team: [{ type: Schema.Types.ObjectId, ref: "Users", required: true }],
-    //not required
     imageUrl: { type: String, required: false },
+    language: { type: String, required: false },
+    GithubRepo: { type: String, required: false },
+    privacySetting: {
+      type: String,
+      enum: ["public", "private"],
+      required: true,
+    },
+    teamSize: { type: Number, required: true },
+    invitedUsers: [
+      { type: Schema.Types.ObjectId, ref: "Users", required: false },
+    ],
   },
 
   {
     timestamps: true,
   }
 );
-
-function arrayLimit(val) {
-  return val.length <= 5;
-}
 
 const groupModel = mongoose.model("Groups", groupsSchema);
 export default groupModel;

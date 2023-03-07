@@ -11,6 +11,7 @@ const groupsRouter = express.Router();
 // POST
 groupsRouter.post("/", jwtMiddleware, async (req, res, next) => {
   try {
+    console.log(req.body);
     const data = {
       ...req.body,
       leader: [req.user._id],

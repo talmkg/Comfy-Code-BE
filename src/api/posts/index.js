@@ -21,7 +21,7 @@ postsRouter.get("/:userid", async (req, res, next) => {
       .populate({
         path: "creator",
         model: "Users",
-        select: "name surname username pfp bio background",
+        select: "name surname username badges pfp bio background",
       });
     if (posts) {
       res.send(posts);

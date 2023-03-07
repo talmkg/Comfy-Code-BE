@@ -63,7 +63,12 @@ usersRouter.get("/login", async (req, res, next) => {
 // GET BY ID
 usersRouter.get("/:userId", async (req, res, next) => {
   try {
-    const user = await usersModel.findById(req.params.userId);
+    console.log("fetching by id...");
+    const user = await usersModel.findById(req.params.userId).populate({
+      path: "badges",
+      model: "Badges",
+      select: "title icon",
+    });
 
     if (user) {
       res.send(user);
