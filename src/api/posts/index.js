@@ -11,8 +11,32 @@ import postModel from "./model.js";
 import q2m from "query-to-mongo";
 const postsRouter = express.Router();
 
+postsRouter.get("/me", jwtMiddleware, async (req, res, next) => {
+  try {
+    console.log(req.user._id);
+    const posts = await postsModel
+      .find({
+        creator: req.user._id,
+      })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "creator",
+        model: "Users",
+        select: "name surname username badges pfp bio background",
+      });
+    if (posts) {
+      res.send(posts);
+    } else {
+      res.send("This user don't have any posts yet.");
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
 postsRouter.get("/:userid", async (req, res, next) => {
   try {
+    console.log("postsRouter/:userid");
     const posts = await postsModel
       .find({
         creator: req.params.userid,
@@ -32,7 +56,7 @@ postsRouter.get("/:userid", async (req, res, next) => {
     next(err);
   }
 });
-//will work for now
+
 postsRouter.post(
   "/",
 
