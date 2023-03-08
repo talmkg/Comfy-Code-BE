@@ -33,54 +33,69 @@ export const newConnectionHandler = (newClient) => {
     newClient.broadcast.emit("newMessage", message);
     saveToMongo();
   });
-  // newClient.on("sendNotification", (notification) => {
-  //   console.log(notification);
-  //   const saveToMongo = async () => {
-  //     const newnotification = new notificationsModel(notification);
-  //     const { _id } = await newnotification.save();
-  //     console.log(_id);
-  //   };
-  //   newClient.broadcast.emit("newNotification", notification);
-  //   saveToMongo();
-  // });
-
-  //
-  //
-  //
 
   newClient.on("notification", (props) => {
-    const { from, text, to, from_mongo, to_mongo } = props;
-
-    console.log(
-      "notification -------------------------------------------------",
-      props
-    );
-    newClient.to(to).emit("notification", {
-      text,
-      to: to,
-      from: from_mongo,
-      createdAt: new Date().toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }),
-    });
-    const saveToMongo = async () => {
-      const data = {
-        from: from_mongo._id,
-        to: to_mongo,
-        text: text,
+    const { from, type, text, to, from_mongo, to_mongo, groupID } = props;
+    //invite
+    console.log(type);
+    if (type === "invite") {
+      if (to !== undefined) {
+        newClient.to(to).emit("notification", {
+          type: "invite",
+          text,
+          to: to,
+          from: from_mongo,
+          createdAt: new Date().toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
+        });
+      }
+      const saveToMongo = async () => {
+        const data = {
+          type: type,
+          from: from_mongo._id,
+          to: to_mongo,
+          text: text,
+          groupID: groupID,
+        };
+        const newNotification = new notificationsModel(data);
+        const { _id } = await newNotification.save();
+        console.log(_id);
       };
-      const newNotification = new notificationsModel(data);
-      const { _id } = await newNotification.save();
-      console.log(_id);
-    };
-    saveToMongo();
+      saveToMongo();
+    }
+    //follow
+    if (type === "follow") {
+      if (to !== undefined) {
+        newClient.to(to).emit("notification", {
+          type: "follow",
+          text,
+          to: to,
+          from: from_mongo,
+          createdAt: new Date().toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
+        });
+      }
+      const saveToMongo = async () => {
+        const data = {
+          type: type,
+          from: from_mongo._id,
+          to: to_mongo,
+          text: text,
+        };
+        const newNotification = new notificationsModel(data);
+        const { _id } = await newNotification.save();
+        console.log(_id);
+      };
+      saveToMongo();
+    }
   });
 
-  //
-  //
-  //
   newClient.on("requestChatHistory", () => {
     console.log("Starting to process chat history...");
     let chatHistory;

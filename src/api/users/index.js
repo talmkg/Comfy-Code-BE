@@ -79,30 +79,13 @@ usersRouter.get("/:userId", async (req, res, next) => {
     next(error);
   }
 });
-//GET LOGINNED USER'S GROUPS
-usersRouter.get("/profile/groups", jwtMiddleware, async (req, res, next) => {
+//GET LOGINNED USER'S GROUPS  WITHOUT POPULATING
+usersRouter.get("/profile/groups/", jwtMiddleware, async (req, res, next) => {
   try {
-    const leaderOf = await Groups.find({
-      leader: req.user._id.toString(),
-    });
     const memberOf = await Groups.find({
       team: req.user._id.toString(),
-    })
-      .populate({
-        path: "team",
-        model: "Users",
-        select: "name surname username pfp bio background",
-      })
-      .populate({
-        path: "leader",
-        model: "Users",
-        select: "name surname username pfp",
-      });
-    const data = {
-      leaderOf: leaderOf,
-      memberOf: memberOf,
-    };
-    res.status(200).send(data);
+    });
+    res.status(200).send(memberOf);
   } catch (error) {
     next(error);
   }

@@ -242,4 +242,32 @@ groupsRouter.delete("/:groupId", jwtMiddleware, async (req, res, next) => {
   }
 });
 
+//add someone to the list of invited users of the group
+groupsRouter.put(
+  "/:groupId/invite/:userId",
+  jwtMiddleware,
+  async (req, res, next) => {
+    try {
+      const group = await groupModel.findById(req.params.groupId);
+      const strings = group.invitedUsers.map((string) => {
+        return string.toString();
+      });
+      strings.push(req.params.userId);
+      const uniq = [...new Set(strings)];
+      const updatedgroup = await groupModel.findByIdAndUpdate(
+        req.params.groupId,
+        {
+          invitedUsers: [...uniq],
+        },
+        { new: true, runValidators: true }
+      );
+      if (updatedgroup) {
+        res.status(200).send("Invited!");
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 export default groupsRouter;

@@ -5,6 +5,7 @@ const { Schema, model } = mongoose;
 
 const notificationsSchema = new Schema(
   {
+    type: { type: String, required: true },
     to: {
       type: Schema.Types.ObjectId,
       ref: "Users",
@@ -16,36 +17,11 @@ const notificationsSchema = new Schema(
       required: true,
     },
     text: { type: String, required: true },
+    groupID: { type: String, required: false },
   },
 
   { timestamps: true }
 );
-
-// userSchema.pre("deleteOne", function (next) {
-//   const userId = this.getQuery()["_id"];
-//   mongoose
-//     .model("Notifications")
-//     .deleteMany({ from: userId }, function (err, result) {
-//       if (err) {
-//         console.log(`[error] ${err}`);
-//         next(err);
-//       } else {
-//         console.log("success");
-//         next();
-//       }
-//     });
-//   mongoose
-//     .model("Groups")
-//     .deleteMany({ leader: [{ userId }] }, function (err, result) {
-//       if (err) {
-//         console.log(`[error] ${err}`);
-//         next(err);
-//       } else {
-//         console.log("success");
-//         next();
-//       }
-//     });
-// });
 
 // export default model("Users", userSchema);
 const notificationsModel = mongoose.model("notifications", notificationsSchema);

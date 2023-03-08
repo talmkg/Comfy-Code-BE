@@ -28,7 +28,12 @@ const groupsSchema = new Schema(
     },
     teamSize: { type: Number, required: true },
     invitedUsers: [
-      { type: Schema.Types.ObjectId, ref: "Users", required: false },
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Users",
+        required: false,
+        default: [],
+      },
     ],
   },
 
