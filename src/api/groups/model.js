@@ -20,7 +20,7 @@ const groupsSchema = new Schema(
     hashtags: [{ type: Object, required: false }],
     imageUrl: { type: String, required: false },
     language: { type: String, required: false },
-    GithubRepo: { type: String, required: false },
+    githubRepoLink: { type: String, required: false },
     privacySetting: {
       type: String,
       enum: ["public", "private"],

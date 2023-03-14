@@ -1,5 +1,5 @@
 import express from "express";
-import { generateJwt } from "../utils/auth/jwt.js";
+import { generateJwt, jwtMiddleware } from "../utils/auth/jwt.js";
 import usersModel from "../users/model.js";
 const authenticationRouter = express.Router();
 authenticationRouter.post("/login", async (req, res, next) => {
@@ -41,4 +41,19 @@ authenticationRouter.post("/register", async (req, res, next) => {
     res.send(500).send({ message: error.message });
   }
 });
+authenticationRouter.get(
+  "/token-check",
+  jwtMiddleware,
+  async (req, res, next) => {
+    try {
+      if (req.user) {
+        res.status(200).send("valid");
+      } else {
+        res.status(403).send("expired");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+);
 export default authenticationRouter;

@@ -69,6 +69,7 @@ feedRouter.get("/:limit", jwtMiddleware, async (req, res, next) => {
           path: "leader",
           model: "Users",
           select: "name surname username pfp bio background badges",
+          populate: { path: "badges", model: "Badges", select: "icon title" },
         })
         .populate({
           path: "team",

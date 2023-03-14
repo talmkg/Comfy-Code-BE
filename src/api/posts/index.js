@@ -22,7 +22,8 @@ postsRouter.get("/me", jwtMiddleware, async (req, res, next) => {
       .populate({
         path: "creator",
         model: "Users",
-        select: "name surname username badges pfp bio background",
+        select: "name surname username pfp bio background badges",
+        populate: { path: "badges", model: "Badges", select: "icon title" },
       });
     if (posts) {
       res.send(posts);
@@ -45,7 +46,8 @@ postsRouter.get("/:userid", async (req, res, next) => {
       .populate({
         path: "creator",
         model: "Users",
-        select: "name surname username badges pfp bio background",
+        select: "name surname username pfp bio background badges",
+        populate: { path: "badges", model: "Badges", select: "icon title" },
       });
     if (posts) {
       res.send(posts);

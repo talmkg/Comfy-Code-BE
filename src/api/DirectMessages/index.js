@@ -11,7 +11,7 @@ directMessagesRouter.get("/:chatid", jwtMiddleware, async (req, res, next) => {
     const directMessages = await directMessagesModel.find({
       chat: req.params.chatid,
     });
-
+    
     if (directMessages) {
       res.send(directMessages);
     } else {

@@ -1,3 +1,4 @@
+import directMessagesModel from "../api/DirectMessages/model.js";
 import messageModel from "../api/GeneralChat/model.js";
 import notificationsModel from "../api/notifications/model.js";
 
@@ -6,14 +7,29 @@ let onlineUsers = [];
 export const newConnectionHandler = (newClient) => {
   console.log("NEW CONNECTION:", newClient.id);
   newClient.emit("welcome", { message: `Hello ${newClient.id}` });
-  newClient.on("setUsername", (payload) => {
-    onlineUsers.push({
-      _id: payload._id,
-      username: payload.username,
-      socketId: newClient.id,
-    });
+  newClient.on("Login", (payload) => {
+    if (onlineUsers.includes(payload._id)) {
+    } else {
+      onlineUsers.push({
+        _id: payload._id,
+        username: payload.username,
+        socketId: newClient.id,
+      });
+    }
+    //  onlineUsers = [...new Set(onlineUsers)];
+    // onlineUsers = onlineUsers.filter(function (item, pos, self) {
+    //   return self.indexOf(item) == pos;
+    // });
+    // console.log(onlineUsers);
+    //
     newClient.emit("loggedIn", onlineUsers);
-    newClient.broadcast.emit("updateOnlineUsersList", onlineUsers);
+    // newClient.emit("loggedIn", () => {
+    //   onlineUsers = [...new Set(onlineUsers)];
+    // });
+
+    //
+    // onlineUsers = [...new Set(onlineUsers)];
+    // newClient.broadcast.emit("updateOnlineUsersList", onlineUsers);
   });
 
   newClient.on("sendMessage", (message) => {
@@ -33,7 +49,6 @@ export const newConnectionHandler = (newClient) => {
     newClient.broadcast.emit("newMessage", message);
     saveToMongo();
   });
-
   newClient.on("notification", (props) => {
     const { from, type, text, to, from_mongo, to_mongo, groupID } = props;
     //invite
@@ -96,6 +111,34 @@ export const newConnectionHandler = (newClient) => {
     }
   });
 
+  newClient.on("directMessage", (props) => {
+    const { from, text, to, from_mongo, to_mongo, chat } = props;
+    if (to !== undefined) {
+      newClient.to(to).emit("directMessage", {
+        text,
+        to: to,
+        chat: chat,
+        from: from_mongo,
+        createdAt: new Date().toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+      });
+    }
+    const saveToMongo = async () => {
+      const data = {
+        from: from_mongo,
+        to: to_mongo,
+        text: text,
+        chat: chat,
+      };
+      const newMessage = new directMessagesModel(data);
+      const { _id } = await newMessage.save();
+    };
+    saveToMongo();
+  });
+
   newClient.on("requestChatHistory", () => {
     console.log("Starting to process chat history...");
     let chatHistory;
@@ -110,6 +153,6 @@ export const newConnectionHandler = (newClient) => {
 
   newClient.on("disconnect", () => {
     onlineUsers = onlineUsers.filter((user) => user.socketId !== newClient.id);
-    newClient.broadcast.emit("updateOnlineUsersList", onlineUsers);
+    // newClient.broadcast.emit("updateOnlineUsersList", onlineUsers);
   });
 };

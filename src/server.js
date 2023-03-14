@@ -22,6 +22,7 @@ import postsRouter from "./api/posts/index.js";
 import feedRouter from "./api/PersonalFeed/index.js";
 import chatsRouter from "./api/Chats/index.js";
 import directMessagesRouter from "./api/DirectMessages/index.js";
+import gitRouter from "./api/github/index.js";
 
 const server = express();
 const port = process.env.PORT || 3002;
@@ -56,6 +57,7 @@ server.use("/posts", postsRouter);
 server.use("/feed", feedRouter);
 server.use("/chats", chatsRouter);
 server.use("/direct-messages", directMessagesRouter);
+server.use("/git", gitRouter);
 
 server.use(badRequestHandler);
 server.use(unauthorizedHandler);

@@ -19,8 +19,12 @@ export function verifyJwt(token) {
   console.log(token);
   return new Promise(function (resolve, reject) {
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) reject(err);
-      else resolve(decoded);
+      if (err) {
+        // reject(err);
+        resolve("expired");
+      } else {
+        resolve(decoded);
+      }
     });
   });
 }
@@ -35,12 +39,15 @@ export async function jwtMiddleware(req, res, next) {
       const token = req.headers.authorization.replace("Bearer ", "");
 
       const decoded = await verifyJwt(token);
+      if (decoded === "expired") {
+        next();
+      } else {
+        const user = await usersModel.findById(decoded.id);
 
-      const user = await usersModel.findById(decoded.id);
+        req.user = user;
 
-      req.user = user;
-
-      next();
+        next();
+      }
     }
   } catch (error) {
     console.log(error);

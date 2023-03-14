@@ -21,14 +21,6 @@ chatsRouter.get("/me", jwtMiddleware, async (req, res, next) => {
         select: "name surname pfp badges username",
       });
     if (chats) {
-      // const updatedData = chats.map(async (chat) => {
-      //   const messagesOfThisChat = await directMessagesModel.find({
-      //     chat: chat._id,
-      //   });
-      //   const data = [chat].concat(messagesOfThisChat);
-      //   console.log("DATA", data);
-      //   return data;
-      // });
       const updatedData = await Promise.all(
         chats.map((chat) => {
           return new Promise(async (resolve, reject) => {
@@ -36,8 +28,9 @@ chatsRouter.get("/me", jwtMiddleware, async (req, res, next) => {
               .find({
                 chat: chat._id,
               })
-              .then((messagesOfThisChat) => {
-                const data = [chat, { messages: messagesOfThisChat }];
+              .then((messages) => {
+                // const data = [chat].concat({ messages: messages });
+                const data = { chat, messages };
                 resolve(data);
               })
               .catch(reject);

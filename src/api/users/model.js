@@ -12,6 +12,7 @@ const userSchema = new Schema(
     email: { type: String, required: true },
     location: { type: String, required: false },
     birthday: { type: String, required: false },
+    github_username: { type: String, required: false, default: "" },
     badges: [
       {
         type: Schema.Types.ObjectId,
@@ -19,7 +20,7 @@ const userSchema = new Schema(
         required: false,
         default: [],
       },
-    ], //who follows me
+    ],
     pfp: {
       type: String,
       required: false,
@@ -40,7 +41,7 @@ const userSchema = new Schema(
         required: false,
         default: [],
       },
-    ], //who am i following
+    ],
     followers: [
       {
         type: Schema.Types.ObjectId,
@@ -48,7 +49,7 @@ const userSchema = new Schema(
         required: false,
         default: [],
       },
-    ], //who follows me
+    ],
   },
 
   { timestamps: true }
